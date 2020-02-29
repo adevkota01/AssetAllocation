@@ -1,11 +1,12 @@
-var ChartBLabel = d3.select("#ChartBLabel");
-ChartBLabel.html("- ");
+// var ChartBLabel = d3.select("#ChartBLabel");
+// ChartBLabel.html("- ");
 
 updatePortfolio();
 
 function optionChanged() {
   updateEachPortfolio();
   histogram();
+  drawDown();
 }
 
 function updatePortfolio() {
@@ -52,12 +53,10 @@ function updatePortfolio() {
             bargroupgap: 0.1,
             barnorm: 'value',
             xaxis: {
+                showline: true,
                 tickmode: "array",
                 tickvals: ['Very_Conservative', 'Conservative', 'Moderate', 'Aggressive', 'Very_Aggressive'],
-                ticktext: ['Very Conservative', 'Conservative', 'Moderate', 'Aggressive', 'Very Aggressive']
-            },
-            xaxis: {
-                showline: true
+                ticktext: ['Very Conservative<br>(20% SPY/80% BND)', 'Conservative<br>(40% SPY/60% BND)', 'Moderate<br>(60% SPY/40% BND)', 'Aggressive<br>(80% SPY/20% BND)', 'Very Aggressive<br>(100% SPY)']
             },
             yaxis: {
                 showline: true
@@ -69,6 +68,7 @@ function updatePortfolio() {
 
     updateEachPortfolio();
     histogram();
+    drawDown();
 }
 
 function histogram() {
@@ -101,7 +101,47 @@ function histogram() {
                 showline: true
             }
         };
+
         Plotly.newPlot('ChartC', dataHist, layoutC, {responsive: true});
+    });
+}
+
+function drawDown() {
+    var pv = document.getElementById("presentValue").value;
+    var iv = document.getElementById("investmentValue").value;
+    var yr = document.getElementById("horizon").value;
+    var pf = document.getElementById("portfolioType").value;
+    var rm = document.getElementById("regModel").value;
+
+    var sampleData = "/drawDown?pv=" + pv + "&iv=" + iv + "&yr=" + yr + "&pf=" + pf + "&rm=" + rm;
+    histDD = [];
+    d3.json(sampleData).then((data) => {
+        for (let [key, value] of Object.entries(data)) {
+            tempValue = value;
+            //tempValue = tempValue.toFixed(2);
+            histDD.push(tempValue);
+        }
+        console.log(histDD);
+
+        var traceHistDD = {
+            x: histDD,
+            type: 'histogram',
+            marker: {
+                color: 'rgb(255,165,0)'
+            },
+            nbinsx: 40
+        };
+        var dataHistDD = [traceHistDD];
+        var layoutDD = {
+            bargap: 0.05,
+            bargroupgap: 0.2,
+            barmode: "overlay",
+            xaxis: {
+                showline: true
+            }
+        };
+
+        Plotly.newPlot('ChartD', dataHistDD, layoutDD, {responsive: true});
     });
 }
 
@@ -127,13 +167,13 @@ function updateEachPortfolio() {
     var pf = document.getElementById("portfolioType").value;
     var rm = document.getElementById("regModel").value;
 
-    if (document.getElementById("portfolioType").value === "Very_Conservative") {
-        ChartBLabel.html("Very Conservative");
-    } else if (document.getElementById("portfolioType").value === "Very_Aggressive") {
-        ChartBLabel.html("Very Aggressive");
-    } else {
-        ChartBLabel.html(document.getElementById("portfolioType").value);
-    }
+    // if (document.getElementById("portfolioType").value === "Very_Conservative") {
+    //     ChartBLabel.html("Very Conservative");
+    // } else if (document.getElementById("portfolioType").value === "Very_Aggressive") {
+    //     ChartBLabel.html("Very Aggressive");
+    // } else {
+    //     ChartBLabel.html(document.getElementById("portfolioType").value);
+    // }
 
     var sampleData = "/eachPortfolio?pv=" + pv + "&iv=" + iv + "&yr=" + yr + "&pf=" + pf + "&rm=" + rm;
     arrCnt = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
